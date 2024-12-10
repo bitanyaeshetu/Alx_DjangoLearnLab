@@ -47,3 +47,23 @@ class ProfileView(APIView):
         user = request.user
         serializer = UserSerializer(user)
         return Response(serializer.data)
+
+from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from .serializers import UserRegistrationSerializer, LoginSerializer
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+
+class UserRegistrationView(generics.CreateAPIView):
+    serializer_class = UserRegistrationSerializer
+    permission_classes = [AllowAny]
+
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response(serializer.validated_data)
+        return Response(serializer.errors, status=400)
