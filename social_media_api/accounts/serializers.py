@@ -45,26 +45,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             bio=validated_data.get('bio', '')
         )
         
-        # Create and return the token after user is created
-        token, created = Token.objects.get_or_create(user=user)
+        # Explicitly create a token for the newly created user
+        token = Token.objects.create(user=user)
+        
         return {'user': user, 'token': token.key}
-
-# Login serializer to get token from username and password
-class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField(write_only=True)
-    
-    def validate(self, data):
-        user = None
-        try:
-            user = get_user_model().objects.get(username=data['username'])
-        except get_user_model().DoesNotExist:
-            raise serializers.ValidationError("Invalid username or password.")
-        
-        if not user.check_password(data['password']):
-            raise serializers.ValidationError("Invalid username or password.")
-        
-        # Create token for the user
-        token, created = Token.objects.get_or_create(user=user)
-        return {'token': token.key}
-
